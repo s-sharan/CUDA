@@ -1,6 +1,5 @@
 #include <random>
 #include <chrono>
-#include <limits>
 #include <iostream>
 #include <vector>
 #include <stdlib.h>
@@ -55,10 +54,14 @@ int main()
     int N;
     cout<<"Enter the size of the arrays N:";
     cin>>N;
+    char ch;
+    cout<<"Do you want to perform computation on CPU also (y/n)";
+    cin>>ch;
+    bool flag=false;
+    if(ch=='y') flag=true;
     int SIZE = N*N;
 
     // Using Uniform Random number generator to initialize the arrays.
-    int max_int = numeric_limits<int>::max();
   	default_random_engine generator(12312);
   	uniform_real_distribution<> distribution(-10.0,10.0);
 
@@ -103,34 +106,36 @@ int main()
 
     cout<<"Time taken to compute the product on a GPU: "<<gpu_time_span.count()<<endl;
 
-    float *cpu_C;
-    cpu_C=new float[SIZE];
+    if(flag){
+	    float *cpu_C;
+	    cpu_C=new float[SIZE];
 
-    // Now do the matrix multiplication on the CPU
-    cpu_start = steady_clock::now();
-    float sum;
-    for (int row=0; row<N; row++){
-        for (int col=0; col<N; col++){
-            sum = 0.f;
-            for (int n=0; n<N; n++){
-                sum += h_A[row*N+n]*h_B[n*N+col];
-            }
-            cpu_C[row*N+col] = sum;
-        }
-    }
-    cpu_end = steady_clock::now();
-    cpu_time_span = duration_cast<duration<double>>(cpu_end - cpu_start);
-
+	    // Now do the matrix multiplication on the CPU
+	    cpu_start = steady_clock::now();
+	    float sum;
+	    for (int row=0; row<N; row++){
+	        for (int col=0; col<N; col++){
+	            sum = 0.f;
+	            for (int n=0; n<N; n++){
+	                sum += h_A[row*N+n]*h_B[n*N+col];
+	            }
+	            cpu_C[row*N+col] = sum;
+	        }
+	    }
+	    cpu_end = steady_clock::now();
+	    cpu_time_span = duration_cast<duration<double>>(cpu_end - cpu_start);
+	
     
-    cout<<"Time taken to compute the product on a CPU: "<<cpu_time_span.count()<<endl;
+	    cout<<"Time taken to compute the product on a CPU: "<<cpu_time_span.count()<<endl;
 
-    double err = 0;
-    // Check the result and make sure it is correct
-    for (int ROW=0; ROW < N; ROW++){
-        for (int COL=0; COL < N; COL++){
-            err += cpu_C[ROW * N + COL] - h_C[ROW * N + COL];
-        }
-    }
+	    double err = 0;
+	    // Check the result and make sure it is correct
+	    for (int ROW=0; ROW < N; ROW++){
+	        for (int COL=0; COL < N; COL++){
+	            err += cpu_C[ROW * N + COL] - h_C[ROW * N + COL];
+	        }
+	    }
+	}
 
 	// Writing the input matrices and output matrices into files
     std::ofstream matA("matrixA.txt"); 
@@ -142,16 +147,16 @@ int main()
         for (int COL=0; COL < N; COL++){
     		matA<<h_A[ROW * N + COL]<"   ";
     		matB<<h_B[ROW * N + COL]<"   ";
-    		cpu<<cpu_C[ROW * N + COL]<"   ";
+    		if(flag) cpu<<cpu_C[ROW * N + COL]<"   ";
             gpu<<h_C[ROW * N + COL]<<"   ";
         }
-        cpu<<endl;
+        if(flag) cpu<<endl;
         gpu<<endl;
         matA<<endl;
         matB<<endl;
     }
 
-    cout << "Normalised Error: " << err/SIZE << endl;
+    if(flag) cout << "Normalised Error: " << err/SIZE << endl;
 
     return 0;
 }
