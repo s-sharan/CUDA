@@ -6,8 +6,6 @@
 #include <stdlib.h>
 #include <time.h>
 #include <cuda_runtime.h>
-#include "kernel.h"
-#include "kernel.cu"
 #include "dev_array.h"
 #include <math.h>
 
@@ -54,14 +52,14 @@ int main()
     // where A, B and C are NxN matrices
     //int N = 16;
     int N;
-    cout<<"Enter the size of the arrays N:"
+    cout<<"Enter the size of the arrays N:";
     cin>>N;
     int SIZE = N*N;
 
     // Using Uniform Random number generator to initialize the arrays.
     int max_int = numeric_limits<int>::max();
-  	default_random_engine generator(seed);
-  	uniform_int_distribution<int> distribution(0,max_int-1);
+  	default_random_engine generator(12312);
+  	uniform_real_distribution<> distribution(-10.0,10.0);
 
   	// Making use of steady clock to measure the amount of time taken to compute the product of matrices.
   	steady_clock::time_point gpu_start;
@@ -128,8 +126,18 @@ int main()
     for (int ROW=0; ROW < N; ROW++){
         for (int COL=0; COL < N; COL++){
             err += cpu_C[ROW * N + COL] - h_C[ROW * N + COL];
+		//cout<<cpu_C[ROW * N + COL]<<"	";
         }
-    }
+	//cout<<endl;
+    }/*
+	cout<<endl<<"GPU:\n";
+	for (int ROW=0; ROW < N; ROW++){
+        for (int COL=0; COL < N; COL++){
+           // err += cpu_C[ROW * N + COL] - h_C[ROW * N + COL];
+                cout<<h_C[ROW * N + COL]<<"   ";
+        }
+        cout<<endl;
+    }*/
 
     cout << "Error: " << err << endl;
 
