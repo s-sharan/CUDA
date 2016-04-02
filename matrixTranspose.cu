@@ -9,10 +9,10 @@
 #include <math.h>
 #include <fstream>
 
-sing namespace std;
+using namespace std;
 using namespace std::chrono;
 
-__global__ void transposeCoalesced(float *odata, const float *idata)
+__global__ void transposeCoalesced(float *odata, const float *idata, int TILE_DIM)
 {
   __shared__ float tile[TILE_DIM][TILE_DIM];
 
@@ -80,7 +80,7 @@ int main()
 
 
     gpu_start = steady_clock::now();
-    transposeCoalesced(d_B.getData(), d_A.getData());
+    transposeCoalesced(d_B.getData(), d_A.getData(),N);
     cudaDeviceSynchronize();
     
     d_B.get(&h_B[0], SIZE);
@@ -90,7 +90,7 @@ int main()
 
     cout<<"Time taken to compute the product on a GPU: "<<gpu_time_span.count()<<endl;
     double err = 0;
-    float *cpu_C;
+    float *cpu_B;
     if(flag){
 	    cpu_B=new float[SIZE];
 
