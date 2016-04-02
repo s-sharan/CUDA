@@ -9,6 +9,8 @@
 #include <math.h>
 #include <fstream>
 
+sing namespace std;
+using namespace std::chrono;
 
 __global__ void transposeCoalesced(float *odata, const float *idata)
 {
@@ -90,14 +92,13 @@ int main()
     double err = 0;
     float *cpu_C;
     if(flag){
-	    cpu_C=new float[SIZE];
+	    cpu_B=new float[SIZE];
 
 	    // Now do the matrix multiplication on the CPU
 	    cpu_start = steady_clock::now();
-	    float sum;
 	    for (int row=0; row<N; row++){
 	        for (int col=0; col<N; col++){
-	            cpu_C[row*N+col]=h_A[col*N+row];
+	            cpu_B[row*N+col]=h_A[col*N+row];
 	        }
 	    }
 	    cpu_end = steady_clock::now();
@@ -115,8 +116,8 @@ int main()
 	for (int ROW=0; ROW < N; ROW++){
         for (int COL=0; COL < N; COL++){
     		matA<<h_A[ROW * N + COL]<"\t";
-    		if(flag) cpu<<cpu_C[ROW * N + COL]<"\t";
-            gpu<<h_C[ROW * N + COL]<<"\t";
+    		if(flag) cpu<<cpu_B[ROW * N + COL]<"\t";
+            gpu<<h_B[ROW * N + COL]<<"\t";
         }
         if(flag) cpu<<endl;
         gpu<<endl;
