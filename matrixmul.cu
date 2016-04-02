@@ -8,6 +8,8 @@
 #include <cuda_runtime.h>
 #include "dev_array.h"
 #include <math.h>
+#include <fstream>
+
 
 using namespace std;
 using namespace std::chrono;
@@ -17,22 +19,23 @@ __global__ void matrixMultiplicationKernel(float* A, float* B, float* C, int N) 
     int ROW = blockIdx.y*blockDim.y+threadIdx.y;
     int COL = blockIdx.x*blockDim.x+threadIdx.x;
 
-    float tmpSum = 0;
+    float sum = 0;
 
     if (ROW < N && COL < N) {
         // each thread computes one element of the block sub-matrix
         for (int i = 0; i < N; i++) {
-            tmpSum += A[ROW * N + i] * B[i * N + COL];
+            sum += A[ROW * N + i] * B[i * N + COL];
         }
     }
-    C[ROW * N + COL] = tmpSum;
+    C[ROW * N + COL] = sum;
 }
 
 
 void matrixMultiplication(float *A, float *B, float *C, int N){
 
     // declare the number of blocks per grid and the number of threads per block
-    // use 1 to 512 threads per block
+    // use 1 to 512 threads per block. 
+    // a maximum of 512 threads can be assigned to a block
     dim3 threadsPerBlock(N, N);
     dim3 blocksPerGrid(1, 1);
         if (N*N > 512){
@@ -41,7 +44,6 @@ void matrixMultiplication(float *A, float *B, float *C, int N){
             blocksPerGrid.x = ceil(double(N)/double(threadsPerBlock.x));
             blocksPerGrid.y = ceil(double(N)/double(threadsPerBlock.y));
         }
-
     matrixMultiplicationKernel<<<blocksPerGrid,threadsPerBlock>>>(A, B, C, N);
 }
 
@@ -50,7 +52,6 @@ int main()
 {
     // Perform matrix multiplication C = A*B
     // where A, B and C are NxN matrices
-    //int N = 16;
     int N;
     cout<<"Enter the size of the arrays N:";
     cin>>N;
@@ -100,6 +101,8 @@ int main()
     gpu_end = steady_clock::now();
     gpu_time_span = duration_cast<duration<double>>(gpu_end - gpu_start);
 
+    cout<<"Time taken to compute the product on a GPU: "<<gpu_time_span.count()<<endl;
+
     float *cpu_C;
     cpu_C=new float[SIZE];
 
@@ -118,7 +121,7 @@ int main()
     cpu_end = steady_clock::now();
     cpu_time_span = duration_cast<duration<double>>(cpu_end - cpu_start);
 
-    cout<<"Time taken to compute the product on a GPU: "<<gpu_time_span.count()<<endl;
+    
     cout<<"Time taken to compute the product on a CPU: "<<cpu_time_span.count()<<endl;
 
     double err = 0;
@@ -126,20 +129,29 @@ int main()
     for (int ROW=0; ROW < N; ROW++){
         for (int COL=0; COL < N; COL++){
             err += cpu_C[ROW * N + COL] - h_C[ROW * N + COL];
-		//cout<<cpu_C[ROW * N + COL]<<"	";
         }
-	//cout<<endl;
-    }/*
-	cout<<endl<<"GPU:\n";
+    }
+
+	// Writing the input matrices and output matrices into files
+    std::ofstream matA("matrixA.txt"); 
+    std::ofstream matB("matrixB.txt");
+    std::ofstream cpu("cpu.txt");
+    std::ofstream gpu("gpu.txt");   
+
 	for (int ROW=0; ROW < N; ROW++){
         for (int COL=0; COL < N; COL++){
-           // err += cpu_C[ROW * N + COL] - h_C[ROW * N + COL];
-                cout<<h_C[ROW * N + COL]<<"   ";
+    		matA<<h_A[ROW * N + COL]<"   ";
+    		matB<<h_B[ROW * N + COL]<"   ";
+    		cpu<<cpu_C[ROW * N + COL]<"   ";
+            gpu<<h_C[ROW * N + COL]<<"   ";
         }
-        cout<<endl;
-    }*/
+        cpu<<endl;
+        gpu<<endl;
+        matA<<endl;
+        matB<<endl;
+    }
 
-    cout << "Error: " << err << endl;
+    cout << "Normalised Error: " << err/SIZE << endl;
 
     return 0;
 }
