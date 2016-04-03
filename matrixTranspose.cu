@@ -98,7 +98,6 @@ int main()
 
 
     gpu_start = steady_clock::now();
-    matrixMultiplicationKernel<<<blocksPerGrid,threadsPerBlock>>>(A, B, C, N);
     transposeCoalesced(d_B.getData(), d_A.getData(),N);
     cudaDeviceSynchronize();
     
