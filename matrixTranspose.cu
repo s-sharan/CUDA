@@ -14,7 +14,7 @@ using namespace std::chrono;
 
 __global__ void transposeCoalescedKernel(float *odata, const float *idata, int N)
 {
-  int size=sqrt(N);
+  const int size=64;
   int rows=N/size;
   __shared__ float tile[size][size];
 
