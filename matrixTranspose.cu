@@ -9,7 +9,7 @@
 #include <math.h>
 #include <fstream>
 
-#define TILE_DIM 32
+#define TILE_DIM 64
 #define BLOCK_ROWS 8
 using namespace std;
 using namespace std::chrono;

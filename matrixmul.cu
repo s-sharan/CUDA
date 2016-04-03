@@ -105,9 +105,10 @@ int main()
     gpu_time_span = duration_cast<duration<double>>(gpu_end - gpu_start);
 
     cout<<"Time taken to compute the product on a GPU: "<<gpu_time_span.count()<<endl;
+    float *cpu_C;
 
     if(flag){
-	    float *cpu_C;
+	    
 	    cpu_C=new float[SIZE];
 
 	    // Now do the matrix multiplication on the CPU
@@ -127,27 +128,20 @@ int main()
 	
     
 	    cout<<"Time taken to compute the product on a CPU: "<<cpu_time_span.count()<<endl;
-
-	    double err = 0;
-	    // Check the result and make sure it is correct
-	    for (int ROW=0; ROW < N; ROW++){
-	        for (int COL=0; COL < N; COL++){
-	            err += cpu_C[ROW * N + COL] - h_C[ROW * N + COL];
-	        }
-	    }
+	   
 	}
 
 	// Writing the input matrices and output matrices into files
-    std::ofstream matA("matrixA.txt"); 
-    std::ofstream matB("matrixB.txt");
-    std::ofstream cpu("cpu.txt");
-    std::ofstream gpu("gpu.txt");   
+    std::ofstream matA("mult/matrixA.txt"); 
+    std::ofstream matB("mult/matrixB.txt");
+    std::ofstream cpu("mult/cpu.txt");
+    std::ofstream gpu("mult/gpu.txt");   
 
 	for (int ROW=0; ROW < N; ROW++){
         for (int COL=0; COL < N; COL++){
-    		matA<<h_A[ROW * N + COL]<"   ";
-    		matB<<h_B[ROW * N + COL]<"   ";
-    		if(flag) cpu<<cpu_C[ROW * N + COL]<"   ";
+    		matA<<h_A[ROW * N + COL]<<"   ";
+    		matB<<h_B[ROW * N + COL]<<"   ";
+    		if(flag) cpu<<cpu_C[ROW * N + COL]<<"   ";
             gpu<<h_C[ROW * N + COL]<<"   ";
         }
         if(flag) cpu<<endl;
@@ -156,7 +150,7 @@ int main()
         matB<<endl;
     }
 
-    if(flag) cout << "Normalised Error: " << err/SIZE << endl;
-
+    
     return 0;
 }
+
