@@ -111,18 +111,24 @@ int main()
     float *cpu_B;
     if(flag){
 	    cpu_B=new float[SIZE];
+      for (int row=0; row<N; row++){
+          for (int col=0; col<N; col++){
+              cout<<h_A[row*N+col]<<"       ";
+          }
+          cout<<endl;
+      }
 
 	    // Now do the matrix multiplication on the CPU
 	    cpu_start = steady_clock::now();
 	    for (int row=0; row<N; row++){
 	        for (int col=0; col<N; col++){
 	            cpu_B[row*N+col]=h_A[col*N+row];
+              cout<<cpu_B[row*N+col]<<"       ";
 	        }
+          cout<<endl;
 	    }
 	    cpu_end = steady_clock::now();
 	    cpu_time_span = duration_cast<duration<double>>(cpu_end - cpu_start);
-	
-    
 	    cout<<"Time taken to compute the product on a CPU: "<<cpu_time_span.count()<<endl;
 	}
 
@@ -141,8 +147,6 @@ int main()
         gpu<<endl;
         matA<<endl;
     }
-
-    if(flag) cout << "Normalised Error: " << err/SIZE << endl;
 
     return 0;
 }
