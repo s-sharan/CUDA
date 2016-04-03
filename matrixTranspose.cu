@@ -35,7 +35,7 @@ __global__ void transposeCoalescedKernel(float *odata, const float *idata, int N
      odata[(y+j)*width + x] = tile[threadIdx.x][threadIdx.y + j];
 }
 
-void transposeCoalescedKernel(float *odata, const float *idata, int N){
+void transposeCoalesced(float *odata, const float *idata, int N){
     // declare the number of blocks per grid and the number of threads per block
     // use 1 to 512 threads per block. 
     // a maximum of 512 threads can be assigned to a block
@@ -47,7 +47,7 @@ void transposeCoalescedKernel(float *odata, const float *idata, int N){
             blocksPerGrid.x = ceil(double(N)/double(threadsPerBlock.x));
             blocksPerGrid.y = ceil(double(N)/double(threadsPerBlock.y));
         }
-    matrixMultiplicationKernel<<<blocksPerGrid,threadsPerBlock>>>(A, B, C, N);
+    transposeCoalescedKernel<<<blocksPerGrid,threadsPerBlock>>>(odata,idata, N);
 }
 
 
