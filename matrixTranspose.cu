@@ -12,23 +12,27 @@
 using namespace std;
 using namespace std::chrono;
 
-__global__ void transposeCoalesced(float *odata, const float *idata, int TILE_DIM)
+__global__ void transposeCoalesced(float *odata, const float *idata, int N)
 {
-  __shared__ float tile[TILE_DIM][TILE_DIM];
+  int size=sqrt(N);
+  if(size>512) size=512;
+  int rows=N/size;
+  __shared__ float tile[size][size];
 
-  int x = blockIdx.x * TILE_DIM + threadIdx.x;
-  int y = blockIdx.y * TILE_DIM + threadIdx.y;
-  int width = gridDim.x * TILE_DIM;
 
-  for (int j = 0; j < TILE_DIM; j += BLOCK_ROWS)
+  int x = blockIdx.x * size + threadIdx.x;
+  int y = blockIdx.y * size + threadIdx.y;
+  int width = gridDim.x * size;
+
+  for (int j = 0; j < size; j += rows)
      tile[threadIdx.y+j][threadIdx.x] = idata[(y+j)*width + x];
 
   __syncthreads();
 
-  x = blockIdx.y * TILE_DIM + threadIdx.x;  // transpose block offset
-  y = blockIdx.x * TILE_DIM + threadIdx.y;
+  x = blockIdx.y * size + threadIdx.x;  // transpose block offset
+  y = blockIdx.x * size + threadIdx.y;
 
-  for (int j = 0; j < TILE_DIM; j += BLOCK_ROWS)
+  for (int j = 0; j < size; j += rows)
      odata[(y+j)*width + x] = tile[threadIdx.x][threadIdx.y + j];
 }
 
