@@ -12,10 +12,9 @@
 using namespace std;
 using namespace std::chrono;
 
-__global__ void transposeCoalesced(float *odata, const float *idata, int N)
+__global__ void transposeCoalescedKernel(float *odata, const float *idata, int N)
 {
   int size=sqrt(N);
-  if(size>512) size=512;
   int rows=N/size;
   __shared__ float tile[size][size];
 
@@ -34,6 +33,21 @@ __global__ void transposeCoalesced(float *odata, const float *idata, int N)
 
   for (int j = 0; j < size; j += rows)
      odata[(y+j)*width + x] = tile[threadIdx.x][threadIdx.y + j];
+}
+
+void transposeCoalescedKernel(float *odata, const float *idata, int N){
+    // declare the number of blocks per grid and the number of threads per block
+    // use 1 to 512 threads per block. 
+    // a maximum of 512 threads can be assigned to a block
+    dim3 threadsPerBlock(N, N);
+    dim3 blocksPerGrid(1, 1);
+        if (N*N > 512){
+            threadsPerBlock.x = 512;
+            threadsPerBlock.y = 512;
+            blocksPerGrid.x = ceil(double(N)/double(threadsPerBlock.x));
+            blocksPerGrid.y = ceil(double(N)/double(threadsPerBlock.y));
+        }
+    matrixMultiplicationKernel<<<blocksPerGrid,threadsPerBlock>>>(A, B, C, N);
 }
 
 
@@ -84,6 +98,7 @@ int main()
 
 
     gpu_start = steady_clock::now();
+    matrixMultiplicationKernel<<<blocksPerGrid,threadsPerBlock>>>(A, B, C, N);
     transposeCoalesced(d_B.getData(), d_A.getData(),N);
     cudaDeviceSynchronize();
     
