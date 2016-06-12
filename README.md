@@ -1,5 +1,5 @@
 # CUDA
-Assignment for Adv Big Data Analytics Course, Columbia University.
+Assignment for Adv Big Data Analytics Course (EECS-6895), Columbia University.
 
 This folder contains two algorithms, matrix multiplication and matix transpose.
 The dev_array.h file contains method to allocate, free memory using CUDA functions and also to set and get variables.
